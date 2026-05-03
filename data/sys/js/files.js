@@ -362,8 +362,7 @@ window.performOverlayUpload = async function (folder) {
             return;
         }
 
-        const fullPath = folder.endsWith('/') ? folder + name : folder + '/' + name;
-        const fileToUpload = new File([content], fullPath, { type: "text/plain" });
+        const fileToUpload = new File([content], name, { type: "text/plain" });
 
         // UI for single paste upload
         const progressItem = document.createElement('div');
