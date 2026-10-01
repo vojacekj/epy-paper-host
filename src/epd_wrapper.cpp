@@ -133,7 +133,15 @@ void EPD_Wrapper::updateDashboard() {
     setTextSize(2); setCursor(115, 148); print("HUMID");
     setCursor(115, 170); setTextSize(3); print((int)hum); print("%");
 
-    // 4. Refresh
+    // 4. Eco indicator
+    if (globalConfig.isEcoMode) {
+        setTextColor(1);
+        setTextSize(1);
+        setCursor(5, 190);
+        print("ZZZ");
+    }
+
+    // 5. Refresh
     driver.EPD_Display();
 }
 

@@ -69,7 +69,9 @@ static void handleEcoMode(const SystemEvent &evt) {
   logger.info("Switching to ECO mode");
   globalConfig.isEcoMode = true;
   saveConfig();
-  display.ecoMode();
+  // Show the dashboard (with the eco ZZZ indicator) so the last screen before
+  // deep sleep is useful info, not the mode splash.
+  display.updateDashboard();
 }
 
 static void handleConstantMode(const SystemEvent &evt) {
