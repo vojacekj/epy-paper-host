@@ -2,11 +2,13 @@
 #include "ap.h"
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
+#include <ESPmDNS.h>
 #include <WiFi.h>
 #include <wifi_manager.h>
 #include "event_manager.h"
 
 #define AP_SSID      "EPY_Setup"
+#define MDNS_HOSTNAME "memo" // http://memo.local + DHCP client name
 
 const char* KEY_WIFI_SSID = "WSSID";
 const char* KEY_WIFI_PASSWORD = "WPassword";
@@ -241,8 +243,18 @@ String testWiFiConnection(String ssid, String password) {
     return "";
 }
 
+static void startMDNS() {
+    if (!MDNS.begin(MDNS_HOSTNAME)) {
+        Serial.println("❌ mDNS start failed (continuing without memo.local)");
+        return;
+    }
+    MDNS.addService("http", "tcp", 80); // Portal web server (src.ino: server(80))
+    Serial.println("✅ mDNS ready: http://" MDNS_HOSTNAME ".local");
+}
+
 String connectToWiFi(String ssid, String password) {
     WiFi.mode(WIFI_STA);
+    WiFi.setHostname(MDNS_HOSTNAME); // Advertise to router/DHCP as "memo"
     WiFi.begin(ssid.c_str(), password.c_str());
 
     Serial.print("Connecting");
@@ -255,6 +267,7 @@ String connectToWiFi(String ssid, String password) {
         }
         delay(500);
     }
+    startMDNS();
     String ip = WiFi.localIP().toString();
     Serial.println("\n✅ WiFi Connected! IP: " + ip);
     return ip;
