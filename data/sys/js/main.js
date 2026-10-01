@@ -195,6 +195,9 @@ function openSettingsOverlay() {
                 intervalSelect.value = settingsData.interval;
             }
 
+            const ecoThreshold = (settingsData.ecoThresholdPct != null) ? settingsData.ecoThresholdPct : 0;
+            document.getElementById('setting-eco-threshold').value = ecoThreshold;
+
             if (settingsData.screen) {
                 screenSelect.value = settingsData.screen;
             }
@@ -216,6 +219,7 @@ function saveSettings() {
         isEcoMode: document.getElementById('setting-eco').checked,
         isBatteryAttached: document.getElementById('setting-battery').checked,
         interval: parseInt(document.getElementById('setting-interval').value, 10),
+        ecoThresholdPct: parseInt(document.getElementById('setting-eco-threshold').value, 10) || 0,
         screen: document.getElementById('setting-screen').value
     };
 
