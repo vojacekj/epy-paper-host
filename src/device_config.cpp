@@ -17,6 +17,7 @@ DeviceConfig globalConfig = {
     false,             // isEcoMode
     true,              // battery is attached
     10,                // interval
+    0,                 // ecoThresholdPct (0 = disabled)
     "EVENT_DASHBOARD", // screen
     "",                // ipAddress will be set on load
     0                  // lastSyncDay
@@ -41,6 +42,8 @@ void loadConfig() {
     globalConfig.isBatteryAttached =
         doc["isBatteryAttached"] | globalConfig.isBatteryAttached;
     globalConfig.interval = doc["interval"] | globalConfig.interval;
+    globalConfig.ecoThresholdPct =
+        doc["ecoThresholdPct"] | globalConfig.ecoThresholdPct;
     globalConfig.lastSyncDay = doc["lastSyncDay"] | 0;
 
     // Safely copy the string into our fixed char array
@@ -72,6 +75,7 @@ void saveConfig() {
   doc["isEcoMode"] = globalConfig.isEcoMode;
   doc["isBatteryAttached"] = globalConfig.isBatteryAttached;
   doc["interval"] = globalConfig.interval;
+  doc["ecoThresholdPct"] = globalConfig.ecoThresholdPct;
   doc["screen"] = globalConfig.screen;
   doc["ipAddress"] = globalConfig.ipAddress;
   doc["lastSyncDay"] = globalConfig.lastSyncDay;
@@ -88,7 +92,7 @@ void resetSleepTimer() {
   lastRefreshTime = millis();
 }
 
-void loopConfig(Portal *portal, i2c_equipment *rtc) {
+void loopConfig(Portal *portal, i2c_equipment *rtc, UserData *userdata) {
   if ((!hasCheckedTimeThisWake && millis() > 2000) ||
       (hasCheckedTimeThisWake && millis() - lastTimeCheck > 60000)) {
 
@@ -100,7 +104,18 @@ void loopConfig(Portal *portal, i2c_equipment *rtc) {
       lastInteractionTime = millis(); // (Optional, depends if you want
                                       // interaction to delay updates)
 
-      // 2. Check if the Interval has passed
+      // 2. Auto-Eco: switch to Eco mode once the battery drops to/below the
+      // configured threshold. One-shot — never auto-returns to Constant mode.
+      if (globalConfig.ecoThresholdPct > 0 && globalConfig.isBatteryAttached &&
+          userdata->getBatteryPercentage() <= globalConfig.ecoThresholdPct) {
+        Serial.printf(
+            "[Auto-Eco] Battery at/below %d%%. Switching to Eco mode.\n",
+            globalConfig.ecoThresholdPct);
+        enqueueEvent(EVENT_ECO_MODE);
+        return;
+      }
+
+      // 3. Check if the Interval has passed
       unsigned long intervalMs =
           (unsigned long)globalConfig.interval * 60 * 1000;
 

@@ -224,6 +224,6 @@ void loop() {
     pwrBtn.update();
     delay(10);
 
-    loopConfig(&portal, rtc);
+    loopConfig(&portal, rtc, &userdata);
   }
 }
