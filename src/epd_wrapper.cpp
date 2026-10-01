@@ -248,13 +248,16 @@ void EPD_Wrapper::completeSetup() {
     print("Connect to: ");
 
     setCursor(10, 95);
-    print("http://");
+    print("http://memo.local");
 
     setCursor(10, 120);
-    print(globalConfig.ipAddress);
+    print("or via IP:");
 
     setCursor(10, 145);
-    print("in your browser");
+    print("http://");
+
+    setCursor(10, 170);
+    print(globalConfig.ipAddress);
 
     driver.EPD_Display();
 }
